@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import pandas as pd
 from pandas import DataFrame
 from pandas_ta.utils import get_drift, get_offset, non_zero_range, verify_series
 
@@ -14,7 +15,11 @@ def true_range(high, low, close, drift=None, offset=None, **kwargs):
     offset = get_offset(offset)
 
     # Calculate Result
-    prev_close = close.shift(drift)
+    prev_close = close.shift(drift) 
+    # since shift causes introduction of NaN, then replicate in the high_low_range
+    lstNan = [float('nan')] * drift
+    high_low_range = pd.Series(lstNan).append(high_low_range[drift:])
+
     ranges = [high_low_range, high - prev_close, prev_close - low]
     true_range = DataFrame(ranges).T
     true_range = true_range.abs().max(axis=1)
